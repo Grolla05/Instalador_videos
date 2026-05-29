@@ -27,6 +27,11 @@ def resource_path(relative: str) -> str:
 os.environ.setdefault("FLASK_TEMPLATE_FOLDER", resource_path("templates"))
 os.environ.setdefault("FLASK_DOWNLOAD_DIR",    resource_path("downloads"))
 
+import uuid
+# Generate a secure unique API Token (Nonce) for Flask isolation
+API_TOKEN = str(uuid.uuid4())
+os.environ["API_TOKEN"] = API_TOKEN
+
 # Import Flask app AFTER setting env vars so it picks up the correct paths
 from app import app as flask_app  # noqa: E402
 
@@ -76,6 +81,16 @@ if __name__ == "__main__":
         print("Erro: Flask não iniciou a tempo.", file=sys.stderr)
         sys.exit(1)
 
+    class JsApi:
+        def select_folder(self):
+            result = window.create_file_dialog(webview.FOLDER_DIALOG)
+            return result[0] if result else None
+
+        def get_api_token(self):
+            return API_TOKEN
+
+    api = JsApi()
+
     # Create the native desktop window
     window = webview.create_window(
         title="YouTube Downloader",
@@ -86,7 +101,40 @@ if __name__ == "__main__":
         resizable=True,
         text_select=False,
         confirm_close=False,
+        js_api=api
     )
+
+    # Graceful Shutdown Handler
+    def on_closing():
+        print("GRACEFUL_SHUTDOWN: Encerrando fila de downloads com segurança...")
+        try:
+            from app import active_downloads, cancelled_tasks, downloads_lock, _cleanup_partial_files
+            
+            # 1. Cancel active downloads under lock
+            active_tasks = []
+            with downloads_lock:
+                for task_id, task in active_downloads.items():
+                    if task["status"] in ("queued", "downloading"):
+                        cancelled_tasks.add(task_id)
+                        task["status"] = "cancelled"
+                        task["progress"] = 0
+                        active_tasks.append(task_id)
+            
+            if active_tasks:
+                print(f"GRACEFUL_SHUTDOWN: Interrompendo {len(active_tasks)} download(s) em andamento...")
+                # 2. Wait a moment for threads to catch Exception in progress_hook and close
+                time.sleep(0.4)
+                
+                # 3. Purge incomplete partial files for active tasks
+                for task_id in active_tasks:
+                    _cleanup_partial_files(task_id)
+            
+            print("GRACEFUL_SHUTDOWN: Finalizado com sucesso.")
+        except Exception as e:
+            print(f"GRACEFUL_SHUTDOWN: Erro ao encerrar: {e}")
+        return True # Allows window to close
+
+    window.events.closing += on_closing
 
     # Start the GUI event loop (blocks until window is closed)
     webview.start(debug=False)
