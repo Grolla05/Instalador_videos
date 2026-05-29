@@ -11,7 +11,7 @@ from pathlib import Path
 from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
 
-# Dynamically inject %APPDATA%/YouTubeDownloader/lib into sys.path before importing yt_dlp
+# Dynamically inject %APPDATA%/Vídeo Downloader 1.1v/lib into sys.path before importing yt_dlp
 import updater
 updater.setup_dynamic_path()
 
@@ -34,6 +34,7 @@ def _app_dir() -> Path:
 app = Flask(
     __name__,
     template_folder=_resource_path("templates"),
+    static_folder=_resource_path("static"),
 )
 CORS(app)
 

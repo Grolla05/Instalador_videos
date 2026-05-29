@@ -20,6 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}" />
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
   
 </head>
 <body>
@@ -175,7 +176,7 @@
 
 <script>
   // ==========================================
-  // Anime.js Spring Physics Micro-interactions
+  // Anime.js Spring Physics Micro-interactions (Tactile Clay)
   // ==========================================
   function bindSprings() {
     const interactives = document.querySelectorAll('.spring-interactive');
@@ -185,10 +186,10 @@
       el.onmouseleave = null;
 
       el.onmousedown = () => {
-        anime({ targets: el, scale: 0.96, duration: 300, easing: 'spring(1, 80, 10, 0)' });
+        anime({ targets: el, scale: 0.94, duration: 250, easing: 'spring(0.8, 120, 14, 0)' });
       };
       const release = () => {
-        anime({ targets: el, scale: 1, duration: 400, easing: 'spring(1, 80, 10, 0)' });
+        anime({ targets: el, scale: 1, duration: 350, easing: 'spring(0.8, 100, 12, 0)' });
       };
       el.onmouseup = release;
       el.onmouseleave = release;
@@ -206,16 +207,16 @@
     try {
       const text = await navigator.clipboard.readText();
       if ((text.includes('youtube.com/watch') || text.includes('youtu.be/')) && text !== lastPasted) {
-        anime({ targets: toast, top: 40, duration: 800, easing: 'spring(1, 80, 10, 0)' });
+        anime({ targets: toast, top: 40, duration: 700, easing: 'spring(1.0, 95, 13, 0)' });
         
         toast.onclick = () => {
           document.getElementById('url-input').value = text;
           lastPasted = text;
-          anime({ targets: toast, top: -100, duration: 600, easing: 'spring(1, 80, 10, 0)' });
+          anime({ targets: toast, top: -100, duration: 550, easing: 'spring(1.0, 110, 15, 0)' });
         };
         
         setTimeout(() => {
-          anime({ targets: toast, top: -100, duration: 600, easing: 'spring(1, 80, 10, 0)' });
+          anime({ targets: toast, top: -100, duration: 550, easing: 'spring(1.0, 110, 15, 0)' });
         }, 5000);
       }
     } catch (e) {
@@ -258,8 +259,8 @@
       anime({
         targets: gear,
         rotate: 90,
-        duration: 500,
-        easing: 'spring(1, 80, 10, 0)'
+        duration: 450,
+        easing: 'spring(0.8, 110, 12, 0)'
       });
 
       anime({
@@ -267,15 +268,15 @@
         opacity: [0, 1],
         scale: [0.94, 1],
         translateY: [-10, 0],
-        duration: 500,
-        easing: 'spring(1, 80, 12, 0)'
+        duration: 450,
+        easing: 'spring(0.8, 120, 14, 0)'
       });
     } else {
       anime({
         targets: gear,
         rotate: 0,
-        duration: 500,
-        easing: 'spring(1, 80, 10, 0)'
+        duration: 450,
+        easing: 'spring(0.8, 110, 12, 0)'
       });
 
       anime({
@@ -404,7 +405,7 @@
     const urlInput = document.getElementById('url-input');
     const url = urlInput.value.trim();
     if (!url) {
-      anime({ targets: urlInput, translateX: [0, -10, 10, -10, 10, 0], duration: 400, easing: 'easeInOutSine' });
+      anime({ targets: urlInput, translateX: [0, -12, 10, -8, 6, -3, 0], duration: 500, easing: 'easeInOutSine' });
       return;
     }
 
@@ -595,8 +596,9 @@
           targets: card,
           opacity: [0, 1],
           translateY: [20, 0],
-          duration: 600,
-          easing: 'spring(1, 80, 10, 0)'
+          scale: [0.95, 1],
+          duration: 700,
+          easing: 'spring(0.8, 100, 13, 0)'
         });
       } else {
         card.innerHTML = createCardHTML(task.id, task);
@@ -683,9 +685,9 @@
     const btn = document.getElementById('btn-upload-cookies');
     anime({
       targets: btn,
-      scale: [1, 0.95, 1],
-      duration: 400,
-      easing: 'spring(1, 80, 10, 0)'
+      scale: [1, 0.94, 1],
+      duration: 450,
+      easing: 'spring(0.8, 110, 12, 0)'
     });
 
     try {
@@ -720,10 +722,10 @@
     const toastText = document.getElementById('toast-text');
     toastText.textContent = message;
     
-    anime({ targets: toastElement, top: 40, duration: 800, easing: 'spring(1, 80, 10, 0)' });
+    anime({ targets: toastElement, top: 40, duration: 700, easing: 'spring(1.0, 95, 13, 0)' });
     
     setTimeout(() => {
-      anime({ targets: toastElement, top: -100, duration: 600, easing: 'spring(1, 80, 10, 0)' });
+      anime({ targets: toastElement, top: -100, duration: 550, easing: 'spring(1.0, 110, 15, 0)' });
     }, 4000);
   }
 
@@ -746,9 +748,9 @@
         targets: panel,
         opacity: [0, 1],
         translateY: [-10, 0],
-        scale: [0.97, 1],
-        duration: 600,
-        easing: 'spring(1, 80, 12, 0)'
+        scale: [0.96, 1],
+        duration: 650,
+        easing: 'spring(0.8, 100, 12, 0)'
       });
     } else if (format === 'mp3') {
       videoField.style.display = 'none';
@@ -759,16 +761,16 @@
         targets: panel,
         opacity: [0, 1],
         translateY: [-10, 0],
-        scale: [0.97, 1],
-        duration: 600,
-        easing: 'spring(1, 80, 12, 0)'
+        scale: [0.96, 1],
+        duration: 650,
+        easing: 'spring(0.8, 100, 12, 0)'
       });
     } else {
       anime({
         targets: panel,
         opacity: 0,
         translateY: -10,
-        scale: 0.97,
+        scale: 0.96,
         duration: 300,
         easing: 'easeInQuad',
         complete: () => { panel.style.display = 'none'; }
@@ -810,9 +812,9 @@
             targets: card,
             opacity: [1, 0],
             translateY: [0, -15],
-            scale: [1, 0.95],
-            duration: 700,
-            easing: 'spring(1, 80, 15, 0)',
+            scale: [1, 0.93],
+            duration: 600,
+            easing: 'spring(0.8, 110, 14, 0)',
             complete: () => {
               sessionTaskIds.delete(taskId);
               card.remove();

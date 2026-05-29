@@ -30,7 +30,7 @@ Nenhum recurso ou melhoria técnica está pendente de adição no momento. O apl
 * **Tratamento de Cookies e Pre-Copy Workaround:** Algoritmos dedicados para copiar o banco de dados sqlite de cookies bloqueado de navegadores ativos do usuário (Edge, Chrome, Brave, Opera) usando modos de leitura imutáveis, garantindo downloads contínuos de vídeos privados ou sob restrição de idade.
 
 ### 🛑 5. Persistência Relacional e Graceful Shutdown
-* **Histórico com SQLite Local:** Criação automática de um banco de dados persistente em `%APPDATA%/YouTubeDownloader/db.sqlite` que armazena estados, parâmetros e histórico do usuário. Ao iniciar, a aplicação restaura perfeitamente o histórico, remapeando de forma limpa tarefas que ficaram em execução nas sessões anteriores com o status `"Cancelado"` para evitar bloqueio estático de threads.
+* **Histórico com SQLite Local:** Criação automática de um banco de dados persistente em `%APPDATA%/Vídeo Downloader 1.1v/db.sqlite` que armazena estados, parâmetros e histórico do usuário. Ao iniciar, a aplicação restaura perfeitamente o histórico, remapeando de forma limpa tarefas que ficaram em execução nas sessões anteriores com o status `"Cancelado"` para evitar bloqueio estático de threads.
 * **Encerramento Controlado (Graceful Shutdown):** Vinculação ao evento nativo de fechamento da janela do `pywebview`. Interrompe loops de progresso ativamente, cancela tarefas da fila e executa uma rotina atômica de purga no disco de arquivos fragmentados pendentes no encerramento.
 
 ---

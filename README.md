@@ -30,7 +30,7 @@ Um aplicativo desktop de alta performance e visualmente deslumbrante (em conform
 
 ### 💾 4. Persistência Relacional (SQLite Local)
 
-* **Banco SQLite local:** Banco embutido persistente em `%APPDATA%/YouTubeDownloader/db.sqlite` para gravação do histórico de downloads e preferências do menu de acessibilidade (tema e tamanho de fonte).
+* **Banco SQLite local:** Banco embutido persistente em `%APPDATA%/Vídeo Downloader 1.1v/db.sqlite` para gravação do histórico de downloads e preferências do menu de acessibilidade (tema e tamanho de fonte).
 
 ---
 
@@ -88,7 +88,7 @@ O script [build.py](file:///d:/GitHub/Instalador_videos/build.py) está pré-pro
   ```
 
 * O executável final totalmente autossuficiente e pronto para distribuição estará localizado em:
-  `dist/YouTubeDownloader.exe`
+  `dist/Vídeo Downloader 1.1v.exe`
 
 ---
 
