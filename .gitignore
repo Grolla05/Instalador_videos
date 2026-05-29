@@ -1,0 +1,29 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller / Packaging output folders
+build/
+dist/
+*.spec
+
+# Local and Temporary Downloader files
+downloads/
+cookies.txt
+*.part
+*.ytdl
+db.sqlite
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Editor / System specific files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
