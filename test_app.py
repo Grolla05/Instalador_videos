@@ -135,6 +135,16 @@ def run_tests():
     opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="1080")
     assert "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]" in opts["format"]
     
+    print("Testing build_ydl_opts - Dynamic Resolution 480p")
+    opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="480")
+    assert "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]" in opts["format"]
+    print("OK")
+
+    print("Testing build_ydl_opts - HD+ (1540x720)")
+    opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="hdplus")
+    assert "bestvideo[height<=720][width<=1540][ext=mp4]+bestaudio[ext=m4a]" in opts["format"]
+    print("OK")
+    
     shutil.which = original_which
     print("OK")
 

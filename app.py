@@ -420,15 +420,22 @@ def build_ydl_opts(fmt_config: dict, output_template: str, progress_hook,
         
         # Se selecionado resolução em alta qualidade e temos o FFmpeg ativo
         if resolution and resolution != "720" and has_ffmpeg:
-            height = resolution
-            if ext == "mp4":
-                opts["format"] = f"bestvideo[height<={height}][ext=mp4]+bestaudio[ext=m4a]/best[height<={height}][ext=mp4]/best"
+            if resolution == "hdplus":
+                # Resolução HD+ (1540x720) - Prioriza largura até 1540 e altura 720
+                if ext == "mp4":
+                    opts["format"] = "bestvideo[height<=720][width<=1540][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][width<=1540][ext=mp4]/best"
+                else:
+                    opts["format"] = "bestvideo[height<=720][width<=1540][ext=webm]+bestaudio[ext=webm]/best[height<=720][width<=1540][ext=webm]/best"
             else:
-                opts["format"] = f"bestvideo[height<={height}][ext=webm]+bestaudio[ext=webm]/best[height<={height}][ext=webm]/best"
+                height = resolution
+                if ext == "mp4":
+                    opts["format"] = f"bestvideo[height<={height}][ext=mp4]+bestaudio[ext=m4a]/best[height<={height}][ext=mp4]/best"
+                else:
+                    opts["format"] = f"bestvideo[height<={height}][ext=webm]+bestaudio[ext=webm]/best[height<={height}][ext=webm]/best"
             print(f"DEBUG: Formato dinâmico de alta resolução configurado: {opts['format']}")
         else:
             if resolution and resolution != "720" and not has_ffmpeg:
-                print("WARNING: Download em alta resolução solicitado mas FFmpeg não está disponível! Aplicando fallback para 720p.")
+                print(f"WARNING: Download em alta resolução ({resolution}) solicitado mas FFmpeg não está disponível! Aplicando fallback para 720p.")
             opts["format"] = fmt_config["format"]
     else:
         opts["format"] = fmt_config["format"]

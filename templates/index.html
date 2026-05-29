@@ -1,463 +1,668 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YouTube Downloader</title>
-  
-  <script>
-    // Síncrono e ultra-rápido para prevenir FOUC (Flash of Unstyled Content)
-    (function() {
-      const theme = localStorage.getItem('youtube_downloader_theme') || 'escuro';
-      const scale = localStorage.getItem('youtube_downloader_font_scale') || '1.0';
-      document.documentElement.setAttribute('data-theme', theme);
-      document.documentElement.style.setProperty('--font-scale', scale);
-    })();
-  </script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Downloader</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/global.css') }}" />
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
-  
-</head>
-<body>
+    <script>
+      // Síncrono e ultra-rápido para prevenir FOUC (Flash of Unstyled Content)
+      (function () {
+        const theme =
+          localStorage.getItem("youtube_downloader_theme") || "escuro";
+        const scale =
+          localStorage.getItem("youtube_downloader_font_scale") || "1.0";
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.style.setProperty("--font-scale", scale);
+      })();
+    </script>
 
-<!-- Auto-Paste Toast -->
-<div id="toast" class="spring-interactive">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
-  </svg>
-  <span id="toast-text">Colar link copiado?</span>
-</div>
-
-<div class="container">
-  
-  <!-- Accessibility Widget -->
-  <div class="accessibility-widget">
-    <button class="btn-accessibility spring-interactive" id="btn-accessibility-toggle" onclick="toggleAccessibilityPanel()" title="Acessibilidade e Temas">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" id="icon-gear">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/global.css') }}"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='favicon.png') }}"
+    />
+  </head>
+  <body>
+    <!-- Auto-Paste Toast -->
+    <div id="toast" class="spring-interactive">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+        />
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
       </svg>
-    </button>
-    
-    <div class="accessibility-panel" id="accessibility-panel" style="display: none; opacity: 0; transform: scale(0.94); translateY(-10px);">
-      <div class="panel-section">
-        <label>Tema da Interface</label>
-        <div class="theme-options">
-          <button class="theme-btn spring-interactive" onclick="setTheme('escuro')" id="theme-btn-escuro">Escuro</button>
-          <button class="theme-btn spring-interactive" onclick="setTheme('claro')" id="theme-btn-claro">Claro</button>
-          <button class="theme-btn spring-interactive" onclick="setTheme('sepia')" id="theme-btn-sepia">Sépia</button>
-          <button class="theme-btn spring-interactive" onclick="setTheme('contraste')" id="theme-btn-contraste">Contraste</button>
-        </div>
-      </div>
-      <div class="panel-section" style="margin-top: 14px;">
-        <label>Tamanho do Texto</label>
-        <div class="font-options">
-          <button class="font-btn spring-interactive" onclick="setFontScale('0.85')" id="font-btn-0.85">A-</button>
-          <button class="font-btn spring-interactive" onclick="setFontScale('1.0')" id="font-btn-1.0">Padrão</button>
-          <button class="font-btn spring-interactive" onclick="setFontScale('1.15')" id="font-btn-1.15">A+</button>
-          <button class="font-btn spring-interactive" onclick="setFontScale('1.3')" id="font-btn-1.3">A++</button>
-        </div>
-      </div>
+      <span id="toast-text">Colar link copiado?</span>
     </div>
-  </div>
 
-  <header class="header">
-    <div class="logo-text">YouTube Downloader</div>
-    <div class="tagline">Baixe vídeos em alta qualidade.</div>
-  </header>
-
-  <main class="card">
-    <div class="field">
-      <label>URL do YouTube</label>
-      <div class="input-wrap">
-        <span class="input-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    <div class="container">
+      <!-- Accessibility Widget -->
+      <div class="accessibility-widget">
+        <button
+          class="btn-accessibility spring-interactive"
+          id="btn-accessibility-toggle"
+          onclick="toggleAccessibilityPanel()"
+          title="Acessibilidade e Temas"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            id="icon-gear"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+            />
           </svg>
-        </span>
-        <input type="text" id="url-input" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off" spellcheck="false" />
+        </button>
+
+        <div
+          class="accessibility-panel"
+          id="accessibility-panel"
+          style="display: none; opacity: 0; transform: scale(0.94); translateY(-10px);"
+        >
+          <div class="panel-section">
+            <label>Tema da Interface</label>
+            <div class="theme-options">
+              <button
+                class="theme-btn spring-interactive"
+                onclick="setTheme('escuro')"
+                id="theme-btn-escuro"
+              >
+                Escuro
+              </button>
+              <button
+                class="theme-btn spring-interactive"
+                onclick="setTheme('claro')"
+                id="theme-btn-claro"
+              >
+                Claro
+              </button>
+              <button
+                class="theme-btn spring-interactive"
+                onclick="setTheme('sepia')"
+                id="theme-btn-sepia"
+              >
+                Sépia
+              </button>
+              <button
+                class="theme-btn spring-interactive"
+                onclick="setTheme('contraste')"
+                id="theme-btn-contraste"
+              >
+                Contraste
+              </button>
+            </div>
+          </div>
+          <div class="panel-section" style="margin-top: 14px">
+            <label>Tamanho do Texto</label>
+            <div class="font-options">
+              <button
+                class="font-btn spring-interactive"
+                onclick="setFontScale('0.85')"
+                id="font-btn-0.85"
+              >
+                A-
+              </button>
+              <button
+                class="font-btn spring-interactive"
+                onclick="setFontScale('1.0')"
+                id="font-btn-1.0"
+              >
+                Padrão
+              </button>
+              <button
+                class="font-btn spring-interactive"
+                onclick="setFontScale('1.15')"
+                id="font-btn-1.15"
+              >
+                A+
+              </button>
+              <button
+                class="font-btn spring-interactive"
+                onclick="setFontScale('1.3')"
+                id="font-btn-1.3"
+              >
+                A++
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <header class="header">
+        <div class="logo-text">YouTube Downloader</div>
+        <div class="tagline">Baixe vídeos em alta qualidade.</div>
+      </header>
+
+      <main class="card">
+        <div class="field">
+          <label>URL do YouTube</label>
+          <div class="input-wrap">
+            <span class="input-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"
+                />
+                <path
+                  d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"
+                />
+              </svg>
+            </span>
+            <input
+              type="text"
+              id="url-input"
+              placeholder="https://www.youtube.com/watch?v=..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Formato</label>
+          <div class="format-grid">
+            <div class="format-option spring-interactive">
+              <input
+                type="radio"
+                name="format"
+                id="fmt-mp4"
+                value="mp4"
+                checked
+              />
+              <label class="format-label" for="fmt-mp4">
+                <span class="fmt-icon">🎬</span>
+                <span>MP4 HD</span>
+              </label>
+            </div>
+            <div class="format-option spring-interactive">
+              <input type="radio" name="format" id="fmt-mp3" value="mp3" />
+              <label class="format-label" for="fmt-mp3">
+                <span class="fmt-icon">🎵</span>
+                <span>MP3</span>
+              </label>
+            </div>
+            <div class="format-option spring-interactive">
+              <input type="radio" name="format" id="fmt-webm" value="webm" />
+              <label class="format-label" for="fmt-webm">
+                <span class="fmt-icon">🌐</span>
+                <span>WEBM</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Quality Settings Panel -->
+        <div id="dynamic-settings-panel" class="dynamic-settings">
+          <div id="video-quality-field">
+            <label>Resolução Máxima</label>
+            <div class="select-wrap">
+              <select id="video-resolution-select">
+                <option value="360">360p (SD)</option>
+                <option value="480">480p (SD)</option>
+                <option value="720">720p (HD - Sem FFmpeg)</option>
+                <option value="hdplus">1060p (HD+)</option>
+                <option value="1080" selected>1080p (Full HD)</option>
+                <option value="1440">1440p (2K)</option>
+                <option value="2160">2160p (4K - Ultra HD)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="audio-quality-field" style="display: none">
+            <label>Qualidade do MP3 (Bitrate)</label>
+            <div class="select-wrap">
+              <select id="audio-bitrate-select">
+                <option value="128">128 kbps (Econômico)</option>
+                <option value="192" selected>192 kbps (Padrão)</option>
+                <option value="320">320 kbps (Qualidade Máxima)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button
+          class="btn spring-interactive"
+          id="btn-download"
+          onclick="startDownload()"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span id="btn-text">Baixar</span>
+          <div class="spinner" id="spinner"></div>
+        </button>
+      </main>
+
+      <div class="queue-title" id="queue-title">Fila de Downloads</div>
+      <div id="downloads-queue"></div>
+
+      <!-- Footer Bar with Active version & Upload Cookies -->
+      <footer class="footer-bar">
+        <div class="footer-left">
+          <span class="pulse-dot"></span>
+          <span id="ytdl-version-text">yt-dlp carregando...</span>
+        </div>
+        <div class="footer-right">
+          <button
+            class="btn-footer spring-interactive"
+            id="btn-upload-cookies"
+            onclick="triggerCookieUpload()"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <span>Importar Cookies</span>
+          </button>
+          <input
+            type="file"
+            id="cookie-file-input"
+            accept=".txt"
+            style="display: none"
+            onchange="handleCookieUpload(event)"
+          />
+        </div>
+      </footer>
     </div>
 
-    <div class="field">
-      <label>Formato</label>
-      <div class="format-grid">
-        <div class="format-option spring-interactive">
-          <input type="radio" name="format" id="fmt-mp4" value="mp4" checked />
-          <label class="format-label" for="fmt-mp4">
-            <span class="fmt-icon">🎬</span>
-            <span>MP4 HD</span>
-          </label>
-        </div>
-        <div class="format-option spring-interactive">
-          <input type="radio" name="format" id="fmt-mp3" value="mp3" />
-          <label class="format-label" for="fmt-mp3">
-            <span class="fmt-icon">🎵</span>
-            <span>MP3</span>
-          </label>
-        </div>
-        <div class="format-option spring-interactive">
-          <input type="radio" name="format" id="fmt-webm" value="webm" />
-          <label class="format-label" for="fmt-webm">
-            <span class="fmt-icon">🌐</span>
-            <span>WEBM</span>
-          </label>
-        </div>
-      </div>
-    </div>
+    <script>
+      // ==========================================
+      // Anime.js Spring Physics Micro-interactions (Tactile Clay)
+      // ==========================================
+      function bindSprings() {
+        const interactives = document.querySelectorAll(".spring-interactive");
+        interactives.forEach((el) => {
+          el.onmousedown = null;
+          el.onmouseup = null;
+          el.onmouseleave = null;
 
-    <!-- Dynamic Quality Settings Panel -->
-    <div id="dynamic-settings-panel" class="dynamic-settings">
-      <div id="video-quality-field">
-        <label>Resolução Máxima</label>
-        <div class="select-wrap">
-          <select id="video-resolution-select">
-            <option value="360">360p (SD)</option>
-            <option value="720">720p (HD - Sem FFmpeg)</option>
-            <option value="1080" selected>1080p (Full HD)</option>
-            <option value="1440">1440p (2K)</option>
-            <option value="2160">2160p (4K - Ultra HD)</option>
-          </select>
-        </div>
-      </div>
-      
-      <div id="audio-quality-field" style="display:none;">
-        <label>Qualidade do MP3 (Bitrate)</label>
-        <div class="select-wrap">
-          <select id="audio-bitrate-select">
-            <option value="128">128 kbps (Econômico)</option>
-            <option value="192" selected>192 kbps (Padrão)</option>
-            <option value="320">320 kbps (Qualidade Máxima)</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <button class="btn spring-interactive" id="btn-download" onclick="startDownload()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      <span id="btn-text">Baixar</span>
-      <div class="spinner" id="spinner"></div>
-    </button>
-  </main>
-
-  <div class="queue-title" id="queue-title">Fila de Downloads</div>
-  <div id="downloads-queue"></div>
-
-  <!-- Footer Bar with Active version & Upload Cookies -->
-  <footer class="footer-bar">
-    <div class="footer-left">
-      <span class="pulse-dot"></span>
-      <span id="ytdl-version-text">yt-dlp carregando...</span>
-    </div>
-    <div class="footer-right">
-      <button class="btn-footer spring-interactive" id="btn-upload-cookies" onclick="triggerCookieUpload()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-        <span>Importar Cookies</span>
-      </button>
-      <input type="file" id="cookie-file-input" accept=".txt" style="display:none;" onchange="handleCookieUpload(event)" />
-    </div>
-  </footer>
-
-</div>
-
-<script>
-  // ==========================================
-  // Anime.js Spring Physics Micro-interactions (Tactile Clay)
-  // ==========================================
-  function bindSprings() {
-    const interactives = document.querySelectorAll('.spring-interactive');
-    interactives.forEach(el => {
-      el.onmousedown = null;
-      el.onmouseup = null;
-      el.onmouseleave = null;
-
-      el.onmousedown = () => {
-        anime({ targets: el, scale: 0.94, duration: 250, easing: 'spring(0.8, 120, 14, 0)' });
-      };
-      const release = () => {
-        anime({ targets: el, scale: 1, duration: 350, easing: 'spring(0.8, 100, 12, 0)' });
-      };
-      el.onmouseup = release;
-      el.onmouseleave = release;
-    });
-  }
-  bindSprings();
-
-  // ==========================================
-  // Smart Clipboard Auto-Paste
-  // ==========================================
-  const toast = document.getElementById('toast');
-  let lastPasted = "";
-
-  window.addEventListener('focus', async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if ((text.includes('youtube.com/watch') || text.includes('youtu.be/')) && text !== lastPasted) {
-        anime({ targets: toast, top: 40, duration: 700, easing: 'spring(1.0, 95, 13, 0)' });
-        
-        toast.onclick = () => {
-          document.getElementById('url-input').value = text;
-          lastPasted = text;
-          anime({ targets: toast, top: -100, duration: 550, easing: 'spring(1.0, 110, 15, 0)' });
-        };
-        
-        setTimeout(() => {
-          anime({ targets: toast, top: -100, duration: 550, easing: 'spring(1.0, 110, 15, 0)' });
-        }, 5000);
+          el.onmousedown = () => {
+            anime({
+              targets: el,
+              scale: 0.94,
+              duration: 250,
+              easing: "spring(0.8, 120, 14, 0)",
+            });
+          };
+          const release = () => {
+            anime({
+              targets: el,
+              scale: 1,
+              duration: 350,
+              easing: "spring(0.8, 100, 12, 0)",
+            });
+          };
+          el.onmouseup = release;
+          el.onmouseleave = release;
+        });
       }
-    } catch (e) {
-      // Ignore
-    }
-  });
+      bindSprings();
 
-  // ==========================================
-  // Concurrency, Nonce Security and State Restoring
-  // ==========================================
-  let apiToken = "default-dev-token";
-  
-  window.addEventListener('pywebviewready', async () => {
-    try {
-      if (window.pywebview && window.pywebview.api) {
-        apiToken = await window.pywebview.api.get_api_token();
-        console.log("SECURITY: API Token recuperado privadamente via pywebview.");
-        startPolling();
-        loadSettingsFromBackend(); // Load and synchronize SQLite configuration sychronously!
-      }
-    } catch (e) {
-      console.error("SECURITY: Falha ao colher API Token: ", e);
-    }
-  });
+      // ==========================================
+      // Smart Clipboard Auto-Paste
+      // ==========================================
+      const toast = document.getElementById("toast");
+      let lastPasted = "";
 
-  // ==========================================
-  // Accessibility and Theme Controls
-  // ==========================================
-  let accessibilityOpen = false;
+      window.addEventListener("focus", async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (
+            (text.includes("youtube.com/watch") ||
+              text.includes("youtu.be/")) &&
+            text !== lastPasted
+          ) {
+            anime({
+              targets: toast,
+              top: 40,
+              duration: 700,
+              easing: "spring(1.0, 95, 13, 0)",
+            });
 
-  function toggleAccessibilityPanel() {
-    const panel = document.getElementById('accessibility-panel');
-    const gear = document.getElementById('icon-gear');
-    accessibilityOpen = !accessibilityOpen;
+            toast.onclick = () => {
+              document.getElementById("url-input").value = text;
+              lastPasted = text;
+              anime({
+                targets: toast,
+                top: -100,
+                duration: 550,
+                easing: "spring(1.0, 110, 15, 0)",
+              });
+            };
 
-    if (accessibilityOpen) {
-      panel.style.display = 'flex';
-      
-      // Anime.js spring scale and rotation of gear
-      anime({
-        targets: gear,
-        rotate: 90,
-        duration: 450,
-        easing: 'spring(0.8, 110, 12, 0)'
-      });
-
-      anime({
-        targets: panel,
-        opacity: [0, 1],
-        scale: [0.94, 1],
-        translateY: [-10, 0],
-        duration: 450,
-        easing: 'spring(0.8, 120, 14, 0)'
-      });
-    } else {
-      anime({
-        targets: gear,
-        rotate: 0,
-        duration: 450,
-        easing: 'spring(0.8, 110, 12, 0)'
-      });
-
-      anime({
-        targets: panel,
-        opacity: 0,
-        scale: 0.94,
-        translateY: -10,
-        duration: 250,
-        easing: 'easeInQuad',
-        complete: () => {
-          panel.style.display = 'none';
+            setTimeout(() => {
+              anime({
+                targets: toast,
+                top: -100,
+                duration: 550,
+                easing: "spring(1.0, 110, 15, 0)",
+              });
+            }, 5000);
+          }
+        } catch (e) {
+          // Ignore
         }
       });
-    }
-  }
 
-  // Close panel when clicking outside
-  document.addEventListener('click', (e) => {
-    const widget = document.querySelector('.accessibility-widget');
-    if (accessibilityOpen && widget && !widget.contains(e.target)) {
-      toggleAccessibilityPanel();
-    }
-  });
+      // ==========================================
+      // Concurrency, Nonce Security and State Restoring
+      // ==========================================
+      let apiToken = "default-dev-token";
 
-  async function setTheme(themeName) {
-    document.documentElement.setAttribute('data-theme', themeName);
-    localStorage.setItem('youtube_downloader_theme', themeName);
-
-    // Update active button styles
-    document.querySelectorAll('.theme-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    const activeBtn = document.getElementById(`theme-btn-${themeName}`);
-    if (activeBtn) activeBtn.classList.add('active');
-
-    // Sincronizar dinamicamente com SQLite local
-    try {
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Token': apiToken
-        },
-        body: JSON.stringify({ theme: themeName })
+      window.addEventListener("pywebviewready", async () => {
+        try {
+          if (window.pywebview && window.pywebview.api) {
+            apiToken = await window.pywebview.api.get_api_token();
+            console.log(
+              "SECURITY: API Token recuperado privadamente via pywebview.",
+            );
+            startPolling();
+            loadSettingsFromBackend(); // Load and synchronize SQLite configuration sychronously!
+          }
+        } catch (e) {
+          console.error("SECURITY: Falha ao colher API Token: ", e);
+        }
       });
-    } catch (e) {
-      console.warn("SQLITE: Falha ao sincronizar tema com SQLite.");
-    }
-  }
 
-  async function setFontScale(scaleValue) {
-    document.documentElement.style.setProperty('--font-scale', scaleValue);
-    localStorage.setItem('youtube_downloader_font_scale', scaleValue);
+      // ==========================================
+      // Accessibility and Theme Controls
+      // ==========================================
+      let accessibilityOpen = false;
 
-    // Update active button styles
-    document.querySelectorAll('.font-btn').forEach(btn => {
-      btn.classList.remove('active');
-    });
-    const activeBtn = document.getElementById(`font-btn-${scaleValue}`);
-    if (activeBtn) activeBtn.classList.add('active');
+      function toggleAccessibilityPanel() {
+        const panel = document.getElementById("accessibility-panel");
+        const gear = document.getElementById("icon-gear");
+        accessibilityOpen = !accessibilityOpen;
 
-    // Sincronizar dinamicamente com SQLite local
-    try {
-      await fetch('/api/settings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Token': apiToken
-        },
-        body: JSON.stringify({ fontScale: scaleValue })
-      });
-    } catch (e) {
-      console.warn("SQLITE: Falha ao sincronizar fonte com SQLite.");
-    }
-  }
+        if (accessibilityOpen) {
+          panel.style.display = "flex";
 
-  // Sincroniza estados do SQLite com o UI State
-  async function loadSettingsFromBackend() {
-    try {
-      const res = await fetch('/api/settings', {
-        headers: { 'X-API-Token': apiToken }
-      });
-      const data = await res.json();
-      if (data.theme) {
-        setTheme(data.theme);
+          // Anime.js spring scale and rotation of gear
+          anime({
+            targets: gear,
+            rotate: 90,
+            duration: 450,
+            easing: "spring(0.8, 110, 12, 0)",
+          });
+
+          anime({
+            targets: panel,
+            opacity: [0, 1],
+            scale: [0.94, 1],
+            translateY: [-10, 0],
+            duration: 450,
+            easing: "spring(0.8, 120, 14, 0)",
+          });
+        } else {
+          anime({
+            targets: gear,
+            rotate: 0,
+            duration: 450,
+            easing: "spring(0.8, 110, 12, 0)",
+          });
+
+          anime({
+            targets: panel,
+            opacity: 0,
+            scale: 0.94,
+            translateY: -10,
+            duration: 250,
+            easing: "easeInQuad",
+            complete: () => {
+              panel.style.display = "none";
+            },
+          });
+        }
       }
-      if (data.fontScale) {
-        setFontScale(data.fontScale);
-      }
-    } catch (e) {
-      console.warn("SQLITE: Falha ao carregar configurações iniciais.");
-    }
-  }
 
-  // Pre-render local buttons active selection according to síncrono script values
-  (function() {
-    const activeTheme = localStorage.getItem('youtube_downloader_theme') || 'escuro';
-    const activeScale = localStorage.getItem('youtube_downloader_font_scale') || '1.0';
-    
-    // Set standard active buttons visually instantly
-    const themeBtn = document.getElementById(`theme-btn-${activeTheme}`);
-    if (themeBtn) themeBtn.classList.add('active');
-    const fontBtn = document.getElementById(`font-btn-${activeScale}`);
-    if (fontBtn) fontBtn.classList.add('active');
-  })();
-
-  // Download Queue Logic
-  // ==========================================
-  let sessionTaskIds = new Set();
-  let currentPage = 1;
-  const itemsPerPage = 5;
-  let isFirstLoad = true;
-  let polling = false;
-
-  function getFormat() {
-    return document.querySelector('input[name="format"]:checked').value;
-  }
-
-  function setLoading(loading) {
-    const btn = document.getElementById('btn-download');
-    document.getElementById('spinner').style.display = loading ? 'block' : 'none';
-    btn.disabled = loading;
-  }
-
-  async function startDownload() {
-    const urlInput = document.getElementById('url-input');
-    const url = urlInput.value.trim();
-    if (!url) {
-      anime({ targets: urlInput, translateX: [0, -12, 10, -8, 6, -3, 0], duration: 500, easing: 'easeInOutSine' });
-      return;
-    }
-
-    setLoading(true);
-    const resolution = document.getElementById('video-resolution-select').value;
-    const audio_bitrate = document.getElementById('audio-bitrate-select').value;
-
-    try {
-      const res = await fetch('/api/download', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-API-Token': apiToken
-        },
-        body: JSON.stringify({ url, format: getFormat(), resolution, audio_bitrate }),
+      // Close panel when clicking outside
+      document.addEventListener("click", (e) => {
+        const widget = document.querySelector(".accessibility-widget");
+        if (accessibilityOpen && widget && !widget.contains(e.target)) {
+          toggleAccessibilityPanel();
+        }
       });
-      const data = await res.json();
-      
-      if (res.ok && data.task_id) {
-        urlInput.value = "";
-        sessionTaskIds.add(data.task_id);
-        currentPage = 1;
-        document.getElementById('queue-title').style.display = 'block';
-        startPolling();
-      } else {
-        alert(data.error || "Erro ao iniciar download.");
+
+      async function setTheme(themeName) {
+        document.documentElement.setAttribute("data-theme", themeName);
+        localStorage.setItem("youtube_downloader_theme", themeName);
+
+        // Update active button styles
+        document.querySelectorAll(".theme-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        const activeBtn = document.getElementById(`theme-btn-${themeName}`);
+        if (activeBtn) activeBtn.classList.add("active");
+
+        // Sincronizar dinamicamente com SQLite local
+        try {
+          await fetch("/api/settings", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-API-Token": apiToken,
+            },
+            body: JSON.stringify({ theme: themeName }),
+          });
+        } catch (e) {
+          console.warn("SQLITE: Falha ao sincronizar tema com SQLite.");
+        }
       }
-    } catch (err) {
-      alert("Erro de conexão.");
-    }
-    setLoading(false);
-  }
 
-  function createCardHTML(taskId, task) {
-    let badgeClass = "badge-queued";
-    let badgeText = "Na fila";
-    if (task.status === "downloading") { badgeClass = "badge-down"; badgeText = "Baixando"; }
-    if (task.status === "done") { badgeClass = "badge-done"; badgeText = "Concluído"; }
-    if (task.status === "error") { badgeClass = "badge-err"; badgeText = "Erro"; }
-    if (task.status === "cancelled") { badgeClass = "badge-queued"; badgeText = "Cancelado"; }
+      async function setFontScale(scaleValue) {
+        document.documentElement.style.setProperty("--font-scale", scaleValue);
+        localStorage.setItem("youtube_downloader_font_scale", scaleValue);
 
-    const title = task.title || "Extraindo informações...";
-    const pct = task.progress || 0;
-    
-    let cancelBtnHtml = (task.status === "downloading" || task.status === "queued") ?
-      `<button class="btn-cancel spring-interactive" onclick="cancelDownload('${taskId}')" title="Cancelar download">✕</button>` : "";
+        // Update active button styles
+        document.querySelectorAll(".font-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        const activeBtn = document.getElementById(`font-btn-${scaleValue}`);
+        if (activeBtn) activeBtn.classList.add("active");
 
-    let errHtml = task.status === "error" ? `<div class="dl-err-msg">${task.error}</div>` : "";
-    let btnHtml = task.status === "done" ? 
-      `<button class="btn btn-secondary spring-interactive" onclick="openFolder('${taskId}')" style="margin-top:8px;">Abrir Pasta</button>` : "";
+        // Sincronizar dinamicamente com SQLite local
+        try {
+          await fetch("/api/settings", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-API-Token": apiToken,
+            },
+            body: JSON.stringify({ fontScale: scaleValue }),
+          });
+        } catch (e) {
+          console.warn("SQLITE: Falha ao sincronizar fonte com SQLite.");
+        }
+      }
 
-    return `
+      // Sincroniza estados do SQLite com o UI State
+      async function loadSettingsFromBackend() {
+        try {
+          const res = await fetch("/api/settings", {
+            headers: { "X-API-Token": apiToken },
+          });
+          const data = await res.json();
+          if (data.theme) {
+            setTheme(data.theme);
+          }
+          if (data.fontScale) {
+            setFontScale(data.fontScale);
+          }
+        } catch (e) {
+          console.warn("SQLITE: Falha ao carregar configurações iniciais.");
+        }
+      }
+
+      // Pre-render local buttons active selection according to síncrono script values
+      (function () {
+        const activeTheme =
+          localStorage.getItem("youtube_downloader_theme") || "escuro";
+        const activeScale =
+          localStorage.getItem("youtube_downloader_font_scale") || "1.0";
+
+        // Set standard active buttons visually instantly
+        const themeBtn = document.getElementById(`theme-btn-${activeTheme}`);
+        if (themeBtn) themeBtn.classList.add("active");
+        const fontBtn = document.getElementById(`font-btn-${activeScale}`);
+        if (fontBtn) fontBtn.classList.add("active");
+      })();
+
+      // Download Queue Logic
+      // ==========================================
+      let sessionTaskIds = new Set();
+      let currentPage = 1;
+      const itemsPerPage = 5;
+      let isFirstLoad = true;
+      let polling = false;
+
+      function getFormat() {
+        return document.querySelector('input[name="format"]:checked').value;
+      }
+
+      function setLoading(loading) {
+        const btn = document.getElementById("btn-download");
+        document.getElementById("spinner").style.display = loading
+          ? "block"
+          : "none";
+        btn.disabled = loading;
+      }
+
+      async function startDownload() {
+        const urlInput = document.getElementById("url-input");
+        const url = urlInput.value.trim();
+        if (!url) {
+          anime({
+            targets: urlInput,
+            translateX: [0, -12, 10, -8, 6, -3, 0],
+            duration: 500,
+            easing: "easeInOutSine",
+          });
+          return;
+        }
+
+        setLoading(true);
+        const resolution = document.getElementById(
+          "video-resolution-select",
+        ).value;
+        const audio_bitrate = document.getElementById(
+          "audio-bitrate-select",
+        ).value;
+
+        try {
+          const res = await fetch("/api/download", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-API-Token": apiToken,
+            },
+            body: JSON.stringify({
+              url,
+              format: getFormat(),
+              resolution,
+              audio_bitrate,
+            }),
+          });
+          const data = await res.json();
+
+          if (res.ok && data.task_id) {
+            urlInput.value = "";
+            sessionTaskIds.add(data.task_id);
+            currentPage = 1;
+            document.getElementById("queue-title").style.display = "block";
+            startPolling();
+          } else {
+            alert(data.error || "Erro ao iniciar download.");
+          }
+        } catch (err) {
+          alert("Erro de conexão.");
+        }
+        setLoading(false);
+      }
+
+      function createCardHTML(taskId, task) {
+        let badgeClass = "badge-queued";
+        let badgeText = "Na fila";
+        if (task.status === "downloading") {
+          badgeClass = "badge-down";
+          badgeText = "Baixando";
+        }
+        if (task.status === "done") {
+          badgeClass = "badge-done";
+          badgeText = "Concluído";
+        }
+        if (task.status === "error") {
+          badgeClass = "badge-err";
+          badgeText = "Erro";
+        }
+        if (task.status === "cancelled") {
+          badgeClass = "badge-queued";
+          badgeText = "Cancelado";
+        }
+
+        const title = task.title || "Extraindo informações...";
+        const pct = task.progress || 0;
+
+        let cancelBtnHtml =
+          task.status === "downloading" || task.status === "queued"
+            ? `<button class="btn-cancel spring-interactive" onclick="cancelDownload('${taskId}')" title="Cancelar download">✕</button>`
+            : "";
+
+        let errHtml =
+          task.status === "error"
+            ? `<div class="dl-err-msg">${task.error}</div>`
+            : "";
+        let btnHtml =
+          task.status === "done"
+            ? `<button class="btn btn-secondary spring-interactive" onclick="openFolder('${taskId}')" style="margin-top:8px;">Abrir Pasta</button>`
+            : "";
+
+        return `
       <div class="dl-header">
         <div class="dl-title" style="max-width: 70%;">${title}</div>
         <div style="display: flex; align-items: center; gap: 8px;">
@@ -474,35 +679,35 @@
       ${errHtml}
       ${btnHtml}
     `;
-  }
+      }
 
-  async function openFolder(taskId) {
-    await fetch(`/api/open-folder/${taskId}`, {
-      headers: { 'X-API-Token': apiToken }
-    });
-  }
+      async function openFolder(taskId) {
+        await fetch(`/api/open-folder/${taskId}`, {
+          headers: { "X-API-Token": apiToken },
+        });
+      }
 
-  function renderPaginationControls(totalPages) {
-    let paginationDiv = document.getElementById('pagination-controls');
-    if (!paginationDiv) {
-      paginationDiv = document.createElement('div');
-      paginationDiv.id = 'pagination-controls';
-      paginationDiv.className = 'pagination-container';
-      const queue = document.getElementById('downloads-queue');
-      queue.parentNode.insertBefore(paginationDiv, queue.nextSibling);
-    }
+      function renderPaginationControls(totalPages) {
+        let paginationDiv = document.getElementById("pagination-controls");
+        if (!paginationDiv) {
+          paginationDiv = document.createElement("div");
+          paginationDiv.id = "pagination-controls";
+          paginationDiv.className = "pagination-container";
+          const queue = document.getElementById("downloads-queue");
+          queue.parentNode.insertBefore(paginationDiv, queue.nextSibling);
+        }
 
-    if (totalPages <= 1) {
-      paginationDiv.style.display = 'none';
-      return;
-    }
+        if (totalPages <= 1) {
+          paginationDiv.style.display = "none";
+          return;
+        }
 
-    paginationDiv.style.display = 'flex';
-    
-    const prevDisabled = currentPage === 1 ? 'disabled' : '';
-    const nextDisabled = currentPage === totalPages ? 'disabled' : '';
+        paginationDiv.style.display = "flex";
 
-    paginationDiv.innerHTML = `
+        const prevDisabled = currentPage === 1 ? "disabled" : "";
+        const nextDisabled = currentPage === totalPages ? "disabled" : "";
+
+        paginationDiv.innerHTML = `
       <button class="pagination-btn spring-interactive" ${prevDisabled} onclick="changePage(-1)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="15 18 9 12 15 6"/>
@@ -517,320 +722,338 @@
         </svg>
       </button>
     `;
-    
-    bindSprings();
-  }
 
-  function changePage(direction) {
-    currentPage += direction;
-    startPolling();
-  }
-
-  function renderQueue(tasks) {
-    if (isFirstLoad) {
-      for (const [taskId, task] of Object.entries(tasks)) {
-        if (task.status === "queued" || task.status === "downloading") {
-          sessionTaskIds.add(taskId);
-        }
-      }
-      isFirstLoad = false;
-    }
-
-    const sessionTasks = [];
-    for (const [taskId, task] of Object.entries(tasks)) {
-      if (sessionTaskIds.has(taskId)) {
-        sessionTasks.push({ id: taskId, ...task });
-      }
-    }
-    
-    sessionTasks.reverse();
-
-    const queue = document.getElementById('downloads-queue');
-    const queueTitle = document.getElementById('queue-title');
-    
-    if (sessionTasks.length > 0) {
-      queueTitle.style.display = 'block';
-    } else {
-      queueTitle.style.display = 'none';
-      queue.innerHTML = '';
-      const pagDiv = document.getElementById('pagination-controls');
-      if (pagDiv) pagDiv.style.display = 'none';
-      return true;
-    }
-
-    const totalItems = sessionTasks.length;
-    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
-
-    if (currentPage > totalPages) {
-      currentPage = totalPages;
-    }
-    if (currentPage < 1) {
-      currentPage = 1;
-    }
-
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedTasks = sessionTasks.slice(startIndex, endIndex);
-
-    const visibleTaskIds = new Set(paginatedTasks.map(t => t.id));
-    const existingCards = queue.querySelectorAll('.dl-card');
-    existingCards.forEach(card => {
-      const cardId = card.id.replace('card-', '');
-      if (!visibleTaskIds.has(cardId)) {
-        card.remove();
-      }
-    });
-
-    paginatedTasks.forEach((task, index) => {
-      let card = document.getElementById(`card-${task.id}`);
-      if (!card) {
-        card = document.createElement('div');
-        card.id = `card-${task.id}`;
-        card.className = 'dl-card';
-        queue.appendChild(card);
-        
-        card.innerHTML = createCardHTML(task.id, task);
         bindSprings();
+      }
 
-        anime({
-          targets: card,
-          opacity: [0, 1],
-          translateY: [20, 0],
-          scale: [0.95, 1],
-          duration: 700,
-          easing: 'spring(0.8, 100, 13, 0)'
+      function changePage(direction) {
+        currentPage += direction;
+        startPolling();
+      }
+
+      function renderQueue(tasks) {
+        if (isFirstLoad) {
+          for (const [taskId, task] of Object.entries(tasks)) {
+            if (task.status === "queued" || task.status === "downloading") {
+              sessionTaskIds.add(taskId);
+            }
+          }
+          isFirstLoad = false;
+        }
+
+        const sessionTasks = [];
+        for (const [taskId, task] of Object.entries(tasks)) {
+          if (sessionTaskIds.has(taskId)) {
+            sessionTasks.push({ id: taskId, ...task });
+          }
+        }
+
+        sessionTasks.reverse();
+
+        const queue = document.getElementById("downloads-queue");
+        const queueTitle = document.getElementById("queue-title");
+
+        if (sessionTasks.length > 0) {
+          queueTitle.style.display = "block";
+        } else {
+          queueTitle.style.display = "none";
+          queue.innerHTML = "";
+          const pagDiv = document.getElementById("pagination-controls");
+          if (pagDiv) pagDiv.style.display = "none";
+          return true;
+        }
+
+        const totalItems = sessionTasks.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
+
+        if (currentPage > totalPages) {
+          currentPage = totalPages;
+        }
+        if (currentPage < 1) {
+          currentPage = 1;
+        }
+
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedTasks = sessionTasks.slice(startIndex, endIndex);
+
+        const visibleTaskIds = new Set(paginatedTasks.map((t) => t.id));
+        const existingCards = queue.querySelectorAll(".dl-card");
+        existingCards.forEach((card) => {
+          const cardId = card.id.replace("card-", "");
+          if (!visibleTaskIds.has(cardId)) {
+            card.remove();
+          }
         });
-      } else {
-        card.innerHTML = createCardHTML(task.id, task);
-        bindSprings();
-        
-        if (queue.children[index] !== card) {
-          queue.insertBefore(card, queue.children[index]);
+
+        paginatedTasks.forEach((task, index) => {
+          let card = document.getElementById(`card-${task.id}`);
+          if (!card) {
+            card = document.createElement("div");
+            card.id = `card-${task.id}`;
+            card.className = "dl-card";
+            queue.appendChild(card);
+
+            card.innerHTML = createCardHTML(task.id, task);
+            bindSprings();
+
+            anime({
+              targets: card,
+              opacity: [0, 1],
+              translateY: [20, 0],
+              scale: [0.95, 1],
+              duration: 700,
+              easing: "spring(0.8, 100, 13, 0)",
+            });
+          } else {
+            card.innerHTML = createCardHTML(task.id, task);
+            bindSprings();
+
+            if (queue.children[index] !== card) {
+              queue.insertBefore(card, queue.children[index]);
+            }
+          }
+        });
+
+        renderPaginationControls(totalPages);
+
+        let allDone = true;
+        for (const task of sessionTasks) {
+          if (task.status === "queued" || task.status === "downloading") {
+            allDone = false;
+          }
+        }
+        return allDone;
+      }
+
+      async function pollDownloads() {
+        try {
+          const res = await fetch("/api/downloads", {
+            headers: { "X-API-Token": apiToken },
+          });
+          const tasks = await res.json();
+
+          const allDone = renderQueue(tasks);
+
+          if (allDone && Object.keys(tasks).length > 0) {
+            polling = false;
+          } else {
+            setTimeout(pollDownloads, 1000);
+          }
+        } catch (e) {
+          setTimeout(pollDownloads, 2000);
         }
       }
-    });
 
-    renderPaginationControls(totalPages);
-
-    let allDone = true;
-    for (const task of sessionTasks) {
-      if (task.status === "queued" || task.status === "downloading") {
-        allDone = false;
+      function startPolling() {
+        if (!polling) {
+          polling = true;
+          pollDownloads();
+        }
       }
-    }
-    return allDone;
-  }
 
-  async function pollDownloads() {
-    try {
-      const res = await fetch('/api/downloads', {
-        headers: { 'X-API-Token': apiToken }
+      startPolling();
+
+      document.getElementById("url-input").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") startDownload();
       });
-      const tasks = await res.json();
-      
-      const allDone = renderQueue(tasks);
 
-      if (allDone && Object.keys(tasks).length > 0) {
-        polling = false;
-      } else {
-        setTimeout(pollDownloads, 1000);
+      // ==========================================
+      // yt-dlp Version and Cookie Upload Logic
+      // ==========================================
+      async function loadYtdlVersion() {
+        try {
+          const res = await fetch("/api/updater/info", {
+            headers: { "X-API-Token": apiToken },
+          });
+          const data = await res.json();
+          if (data.version) {
+            document.getElementById("ytdl-version-text").textContent =
+              `yt-dlp v${data.version}`;
+          }
+        } catch (e) {
+          document.getElementById("ytdl-version-text").textContent =
+            `yt-dlp ativo`;
+        }
       }
-    } catch (e) {
-      setTimeout(pollDownloads, 2000);
-    }
-  }
+      loadYtdlVersion();
 
-  function startPolling() {
-    if (!polling) {
-      polling = true;
-      pollDownloads();
-    }
-  }
-
-  startPolling();
-
-  document.getElementById('url-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') startDownload();
-  });
-
-  // ==========================================
-  // yt-dlp Version and Cookie Upload Logic
-  // ==========================================
-  async function loadYtdlVersion() {
-    try {
-      const res = await fetch('/api/updater/info', {
-        headers: { 'X-API-Token': apiToken }
-      });
-      const data = await res.json();
-      if (data.version) {
-        document.getElementById('ytdl-version-text').textContent = `yt-dlp v${data.version}`;
+      function triggerCookieUpload() {
+        document.getElementById("cookie-file-input").click();
       }
-    } catch (e) {
-      document.getElementById('ytdl-version-text').textContent = `yt-dlp ativo`;
-    }
-  }
-  loadYtdlVersion();
 
-  function triggerCookieUpload() {
-    document.getElementById('cookie-file-input').click();
-  }
+      async function handleCookieUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
 
-  async function handleCookieUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+        const formData = new FormData();
+        formData.append("file", file);
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const btn = document.getElementById('btn-upload-cookies');
-    anime({
-      targets: btn,
-      scale: [1, 0.94, 1],
-      duration: 450,
-      easing: 'spring(0.8, 110, 12, 0)'
-    });
-
-    try {
-      const res = await fetch('/api/cookies/upload', {
-        method: 'POST',
-        headers: { 'X-API-Token': apiToken },
-        body: formData
-      });
-      const data = await res.json();
-
-      if (res.ok) {
-        showToast("Cookies importados com sucesso!");
+        const btn = document.getElementById("btn-upload-cookies");
         anime({
           targets: btn,
-          backgroundColor: ['rgba(255, 255, 255, 0.08)', 'rgba(52, 199, 89, 0.2)', 'rgba(255, 255, 255, 0.08)'],
-          borderColor: ['var(--border)', 'var(--success)', 'var(--border)'],
-          duration: 1000,
-          easing: 'easeInOutQuad'
+          scale: [1, 0.94, 1],
+          duration: 450,
+          easing: "spring(0.8, 110, 12, 0)",
         });
-      } else {
-        showToast(data.error || "Erro ao salvar cookies.");
+
+        try {
+          const res = await fetch("/api/cookies/upload", {
+            method: "POST",
+            headers: { "X-API-Token": apiToken },
+            body: formData,
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            showToast("Cookies importados com sucesso!");
+            anime({
+              targets: btn,
+              backgroundColor: [
+                "rgba(255, 255, 255, 0.08)",
+                "rgba(52, 199, 89, 0.2)",
+                "rgba(255, 255, 255, 0.08)",
+              ],
+              borderColor: ["var(--border)", "var(--success)", "var(--border)"],
+              duration: 1000,
+              easing: "easeInOutQuad",
+            });
+          } else {
+            showToast(data.error || "Erro ao salvar cookies.");
+          }
+        } catch (err) {
+          showToast("Erro ao conectar ao servidor.");
+        }
+
+        event.target.value = "";
       }
-    } catch (err) {
-      showToast("Erro ao conectar ao servidor.");
-    }
-    
-    event.target.value = "";
-  }
 
-  function showToast(message) {
-    const toastElement = document.getElementById('toast');
-    const toastText = document.getElementById('toast-text');
-    toastText.textContent = message;
-    
-    anime({ targets: toastElement, top: 40, duration: 700, easing: 'spring(1.0, 95, 13, 0)' });
-    
-    setTimeout(() => {
-      anime({ targets: toastElement, top: -100, duration: 550, easing: 'spring(1.0, 110, 15, 0)' });
-    }, 4000);
-  }
+      function showToast(message) {
+        const toastElement = document.getElementById("toast");
+        const toastText = document.getElementById("toast-text");
+        toastText.textContent = message;
 
-  // ==========================================
-  // Dynamic Option Toggling and Layout Transitions
-  // ==========================================
-  const panel = document.getElementById('dynamic-settings-panel');
-  const videoField = document.getElementById('video-quality-field');
-  const audioField = document.getElementById('audio-quality-field');
+        anime({
+          targets: toastElement,
+          top: 40,
+          duration: 700,
+          easing: "spring(1.0, 95, 13, 0)",
+        });
 
-  function updateDynamicSettingsUI() {
-    const format = getFormat();
-    
-    if (format === 'mp4' || format === 'webm') {
-      videoField.style.display = 'block';
-      audioField.style.display = 'none';
-      panel.style.display = 'block';
-      
-      anime({
-        targets: panel,
-        opacity: [0, 1],
-        translateY: [-10, 0],
-        scale: [0.96, 1],
-        duration: 650,
-        easing: 'spring(0.8, 100, 12, 0)'
-      });
-    } else if (format === 'mp3') {
-      videoField.style.display = 'none';
-      audioField.style.display = 'block';
-      panel.style.display = 'block';
-      
-      anime({
-        targets: panel,
-        opacity: [0, 1],
-        translateY: [-10, 0],
-        scale: [0.96, 1],
-        duration: 650,
-        easing: 'spring(0.8, 100, 12, 0)'
-      });
-    } else {
-      anime({
-        targets: panel,
-        opacity: 0,
-        translateY: -10,
-        scale: 0.96,
-        duration: 300,
-        easing: 'easeInQuad',
-        complete: () => { panel.style.display = 'none'; }
-      });
-    }
-  }
-
-  document.querySelectorAll('input[name="format"]').forEach(radio => {
-    radio.addEventListener('change', updateDynamicSettingsUI);
-  });
-
-  // ==========================================
-  // Active Cancellation Logic
-  // ==========================================
-  async function cancelDownload(taskId) {
-    if (event) {
-      event.stopPropagation();
-      const btn = event.target;
-      anime({
-        targets: btn,
-        scale: [1, 0.8, 1],
-        duration: 300,
-        easing: 'spring(1, 80, 10, 0)'
-      });
-    }
-
-    try {
-      const res = await fetch(`/api/cancel/${taskId}`, { 
-        method: 'POST',
-        headers: { 'X-API-Token': apiToken }
-      });
-      const data = await res.json();
-      
-      if (res.ok) {
-        showToast("Cancelamento solicitado.");
-        const card = document.getElementById(`card-${taskId}`);
-        if (card) {
+        setTimeout(() => {
           anime({
-            targets: card,
-            opacity: [1, 0],
-            translateY: [0, -15],
-            scale: [1, 0.93],
-            duration: 600,
-            easing: 'spring(0.8, 110, 14, 0)',
+            targets: toastElement,
+            top: -100,
+            duration: 550,
+            easing: "spring(1.0, 110, 15, 0)",
+          });
+        }, 4000);
+      }
+
+      // ==========================================
+      // Dynamic Option Toggling and Layout Transitions
+      // ==========================================
+      const panel = document.getElementById("dynamic-settings-panel");
+      const videoField = document.getElementById("video-quality-field");
+      const audioField = document.getElementById("audio-quality-field");
+
+      function updateDynamicSettingsUI() {
+        const format = getFormat();
+
+        if (format === "mp4" || format === "webm") {
+          videoField.style.display = "block";
+          audioField.style.display = "none";
+          panel.style.display = "block";
+
+          anime({
+            targets: panel,
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            scale: [0.96, 1],
+            duration: 650,
+            easing: "spring(0.8, 100, 12, 0)",
+          });
+        } else if (format === "mp3") {
+          videoField.style.display = "none";
+          audioField.style.display = "block";
+          panel.style.display = "block";
+
+          anime({
+            targets: panel,
+            opacity: [0, 1],
+            translateY: [-10, 0],
+            scale: [0.96, 1],
+            duration: 650,
+            easing: "spring(0.8, 100, 12, 0)",
+          });
+        } else {
+          anime({
+            targets: panel,
+            opacity: 0,
+            translateY: -10,
+            scale: 0.96,
+            duration: 300,
+            easing: "easeInQuad",
             complete: () => {
-              sessionTaskIds.delete(taskId);
-              card.remove();
-              startPolling();
-            }
+              panel.style.display = "none";
+            },
           });
         }
-      } else {
-        showToast(data.error || "Erro ao cancelar download.");
       }
-    } catch (e) {
-      showToast("Erro ao conectar ao servidor.");
-    }
-  }
 
-  updateDynamicSettingsUI();
-</script>
-</body>
+      document.querySelectorAll('input[name="format"]').forEach((radio) => {
+        radio.addEventListener("change", updateDynamicSettingsUI);
+      });
+
+      // ==========================================
+      // Active Cancellation Logic
+      // ==========================================
+      async function cancelDownload(taskId) {
+        if (event) {
+          event.stopPropagation();
+          const btn = event.target;
+          anime({
+            targets: btn,
+            scale: [1, 0.8, 1],
+            duration: 300,
+            easing: "spring(1, 80, 10, 0)",
+          });
+        }
+
+        try {
+          const res = await fetch(`/api/cancel/${taskId}`, {
+            method: "POST",
+            headers: { "X-API-Token": apiToken },
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            showToast("Cancelamento solicitado.");
+            const card = document.getElementById(`card-${taskId}`);
+            if (card) {
+              anime({
+                targets: card,
+                opacity: [1, 0],
+                translateY: [0, -15],
+                scale: [1, 0.93],
+                duration: 600,
+                easing: "spring(0.8, 110, 14, 0)",
+                complete: () => {
+                  sessionTaskIds.delete(taskId);
+                  card.remove();
+                  startPolling();
+                },
+              });
+            }
+          } else {
+            showToast(data.error || "Erro ao cancelar download.");
+          }
+        } catch (e) {
+          showToast("Erro ao conectar ao servidor.");
+        }
+      }
+
+      updateDynamicSettingsUI();
+    </script>
+  </body>
 </html>
