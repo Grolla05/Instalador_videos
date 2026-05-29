@@ -11,9 +11,9 @@ def get_app_dir() -> Path:
     """Return the writable application data directory for user configs and runtime libraries."""
     app_data = os.environ.get("APPDATA")
     if app_data:
-        path = Path(app_data) / "YouTubeDownloader"
+        path = Path(app_data) / "Vídeo Downloader 1.1v"
     else:
-        path = Path.home() / ".youtubedownloader"
+        path = Path.home() / ".Vídeo Downloader 1.1v"
     path.mkdir(parents=True, exist_ok=True)
     return path
 

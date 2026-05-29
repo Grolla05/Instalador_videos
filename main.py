@@ -137,4 +137,8 @@ if __name__ == "__main__":
     window.events.closing += on_closing
 
     # Start the GUI event loop (blocks until window is closed)
-    webview.start(debug=False)
+    icon_path = os.path.join(os.path.dirname(__file__), 'static', 'favicon.png')
+    if os.path.exists(icon_path):
+        webview.start(debug=False, icon=icon_path)
+    else:
+        webview.start(debug=False)
