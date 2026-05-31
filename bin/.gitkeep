@@ -1,2 +1,0 @@
-# Keep this folder for FFmpeg binaries (ffmpeg.exe and ffprobe.exe).
-# They will be automatically bundled by PyInstaller on build.
