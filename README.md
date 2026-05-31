@@ -107,37 +107,65 @@ O aplicativo utiliza um banco de dados relacional **SQLite** persistente integra
 
 O YouTube transmite transmissões de alta resolução (1080p, 2K, 4K) em canais separados de vídeo e áudio (DASH). Para fundi-los ou converter downloads para MP3, o aplicativo orquestra processos do **FFmpeg**.
 
-### Configurando o FFmpeg de Forma Portátil (Zero Instalações de Sistema)
+> **⚠️ Os binários do FFmpeg NÃO estão incluídos no repositório** (estão no `.gitignore` por serem arquivos de terceiros com ~100 MB cada). Instale-os com o script abaixo.
 
-Para garantir portabilidade (o usuário abre o app e funciona imediatamente), os executáveis portáteis devem ser inseridos diretamente no projeto:
+### ✨ Método Recomendado — Script Automático
+
+Rode o script `setup_ffmpeg.py` incluído no projeto. Ele baixa o pacote oficial da **gyan.dev**, extrai os três executáveis e os coloca automaticamente em `bin/`:
+
+```bash
+python setup_ffmpeg.py
+```
+
+Para forçar a reinstalação caso os binários já existam:
+
+```bash
+python setup_ffmpeg.py --force
+```
+
+### Configuração Manual (alternativa)
+
+Caso prefira instalar manualmente:
 
 1. **Acesse as compilações oficiais:**
-   * 👉 Visite [Gyan.dev FFmpeg Releases](https://www.gyan.dev/ffmpeg/builds/) e baixe o arquivo comprimido **`ffmpeg-release-essentials.zip`**.
-2. **Extraia os binários bin:**
-   * Navegue no `.zip` até a pasta `bin/` e copie os arquivos **`ffmpeg.exe`** e **`ffprobe.exe`**.
-3. **Cole na pasta bin local:**
-   * Coloque ambos os arquivos executáveis diretamente dentro da subpasta **`bin/`** localizada na raiz do seu projeto (`d:/GitHub/Instalador_videos/bin/`).
-   * O código detectará a pasta bin local dinamicamente no boot e definirá o caminho de processamento prioritário nela!
+   * 👉 Visite [Gyan.dev FFmpeg Releases](https://www.gyan.dev/ffmpeg/builds/) e baixe **`ffmpeg-release-essentials.zip`**.
+2. **Extraia os binários:**
+   * Navegue no `.zip` até a pasta `bin/` e copie **`ffmpeg.exe`**, **`ffprobe.exe`** e **`ffplay.exe`**.
+3. **Cole na pasta `bin/` do projeto:**
+   * O código detectará os executáveis automaticamente no boot.
 
 ---
 
 ## 🛠️ Execução e Desenvolvimento Local
 
-### 1. Preparando o Ambiente
+### 1. Clonando o Repositório
 
-Recomenda-se a instalação das dependências listadas no `requirements.txt`:
+```bash
+git clone https://github.com/seu-usuario/Instalador_videos.git
+cd Instalador_videos
+```
+
+### 2. Instalando as Dependências Python
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Rodar em Ambiente de Desenvolvimento
+### 3. Instalando o FFmpeg (obrigatório)
+
+```bash
+python setup_ffmpeg.py
+```
+
+> O script baixa automaticamente os binários do FFmpeg (~100 MB) e os coloca em `bin/`. Necessário apenas uma vez.
+
+### 4. Rodar em Ambiente de Desenvolvimento
 
 ```bash
 python main.py
 ```
 
-### 3. Rodar Testes de Integração Automatizados
+### 5. Rodar Testes de Integração Automatizados
 
 Uma suíte completa de 10 blocos de testes unitários e de integração está disponível para garantir a conformidade da segurança, concorrência e endpoints da API:
 
@@ -185,7 +213,7 @@ python create_shortcut.py
 ├── test_app.py            # Suíte abrangente de testes unitários e de integração
 ├── build.py               # Orquestrador do empacotamento PyInstaller
 ├── create_shortcut.py     # Utilitário para criar o atalho (.lnk) na Área de Trabalho
-├── CHANGES.md             # Histórico detalhado de evoluções visuais e arquiteturais
+├── setup_ffmpeg.py        # ✨ Setup automático dos binários FFmpeg (rodar após clonar)
 ├── static/
 │   ├── favicon.png        # [Opcional] Ícone padrão carregado dinamicamente no app
 │   └── css/
@@ -194,8 +222,9 @@ python create_shortcut.py
 │   └── index.html         # Template do frontend e micro-interações Anime.js
 ├── bin/
 │   ├── .gitkeep           # Reserva a pasta bin no repositório Git
-│   ├── ffmpeg.exe         # [Opcional] Executável portátil para mesclagem de mídias
-│   └── ffprobe.exe        # [Opcional] Executável portátil para leitura de dados
+│   ├── ffmpeg.exe         # ⚠️ NÃO incluso no repo — instalar via setup_ffmpeg.py
+│   ├── ffprobe.exe        # ⚠️ NÃO incluso no repo — instalar via setup_ffmpeg.py
+│   └── ffplay.exe         # ⚠️ NÃO incluso no repo — instalar via setup_ffmpeg.py
 ├── icon.ico               # Ícone do executável Windows
 ├── requirements.txt       # Arquivo de bibliotecas dependentes
 └── .gitignore             # Configuração de arquivos ignorados no controle Git

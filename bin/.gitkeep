@@ -1,0 +1,5 @@
+# Este arquivo garante que a pasta bin/ seja rastreada pelo Git,
+# mesmo quando os binários do FFmpeg (*.exe) estão listados no .gitignore.
+#
+# Para instalar o FFmpeg automaticamente, rode na raiz do projeto:
+#   python setup_ffmpeg.py
