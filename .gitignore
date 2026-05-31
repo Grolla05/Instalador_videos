@@ -15,6 +15,10 @@ cookies.txt
 *.ytdl
 db.sqlite
 
+# FFmpeg portable binaries (large third-party executables, ~100MB each)
+# Download and place them manually in bin/ — see README for instructions
+bin/*.exe
+
 # Virtual environments
 .venv/
 venv/
