@@ -1,5 +1,5 @@
 flask==3.0.3
 flask-cors==4.0.1
-yt-dlp>=2024.11.4
+yt-dlp>=2026.8.19
 pywebview>=5.0
 pyinstaller>=6.0

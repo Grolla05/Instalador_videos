@@ -31,9 +31,13 @@ args = [
     "--windowed",               # sem janela de console
     "--name", "Vídeo Downloader 1.1v",
     "--icon", os.path.join(HERE, "icon.ico"),
+    # Permite que o PyInstaller resolva "from app import app" e
+    # "from core import updater" a partir da raiz do repo, já que o
+    # ponto de entrada (core/main.py) não fica mais na raiz.
+    "--paths", HERE,
 ] + add_data_args + [
     # Ponto de entrada
-    os.path.join(HERE, "main.py"),
+    os.path.join(HERE, "core", "main.py"),
 ]
 
 print("[LOG] Iniciando build...\n")

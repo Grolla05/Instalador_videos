@@ -2,7 +2,7 @@
 setup_ffmpeg.py — Baixa e instala automaticamente os binários do FFmpeg na pasta bin/.
 
 Uso:
-    python setup_ffmpeg.py
+    python scripts/setup_ffmpeg.py
 
 O script irá:
   1. Verificar se os binários já existem em bin/
@@ -22,7 +22,7 @@ from pathlib import Path
 # ── Configurações ─────────────────────────────────────────────────────────────
 FFMPEG_URL = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
 BINARIES   = ["ffmpeg.exe", "ffprobe.exe", "ffplay.exe"]
-BIN_DIR    = Path(__file__).parent / "bin"
+BIN_DIR    = Path(__file__).resolve().parent.parent / "bin"
 
 # ── Cores ANSI para terminal ──────────────────────────────────────────────────
 GREEN  = "\033[92m"
@@ -109,7 +109,7 @@ def _extract_binaries(zip_path: Path) -> list[str]:
             "# mesmo quando os binários do FFmpeg (*.exe) estão no .gitignore.\n"
             "#\n"
             "# Para instalar o FFmpeg automaticamente, rode na raiz do projeto:\n"
-            "#   python setup_ffmpeg.py\n"
+            "#   python scripts/setup_ffmpeg.py\n"
         )
 
     with zipfile.ZipFile(zip_path, "r") as zf:

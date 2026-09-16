@@ -24,7 +24,7 @@ def create_desktop_shortcut():
         print("[ERR] Este script de criação de atalhos é exclusivo para sistemas operacionais Windows.")
         return False
 
-    HERE = os.path.dirname(os.path.abspath(__file__))
+    HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     
     # Caminho do executável compilado
     exe_name = "Vídeo Downloader 1.1v.exe"

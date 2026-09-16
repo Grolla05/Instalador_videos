@@ -13,8 +13,8 @@ from unittest.mock import MagicMock
 API_TOKEN = "test-nonce-token-12345"
 os.environ["API_TOKEN"] = API_TOKEN
 
-# Add current dir to path to import app
-sys.path.append(os.path.abspath("."))
+# Add repo root to path to import app (this file lives in tests/)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app import (
     app,
     init_db,
@@ -29,7 +29,7 @@ from app import (
     FORMATS
 )
 import app as app_module
-import updater
+from core import updater
 
 client = app.test_client()
 
@@ -133,16 +133,16 @@ def run_tests():
     
     fmt_config = FORMATS["mp4"]
     opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="1080")
-    assert "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]" in opts["format"]
-    
+    assert "bestvideo[height<=1080]+bestaudio" in opts["format"]
+
     print("Testing build_ydl_opts - Dynamic Resolution 480p")
     opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="480")
-    assert "bestvideo[height<=480][ext=mp4]+bestaudio[ext=m4a]" in opts["format"]
+    assert "bestvideo[height<=480]+bestaudio" in opts["format"]
     print("OK")
 
     print("Testing build_ydl_opts - HD+ (1540x720)")
     opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="hdplus")
-    assert "bestvideo[height<=720][width<=1540][ext=mp4]+bestaudio[ext=m4a]" in opts["format"]
+    assert "bestvideo[height<=720][width<=1540]+bestaudio" in opts["format"]
     print("OK")
     
     shutil.which = original_which

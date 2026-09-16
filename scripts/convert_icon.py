@@ -2,7 +2,7 @@ from PIL import Image
 import os
 
 png_path = r"C:\Users\fegro\.gemini\antigravity\brain\29828f9c-3308-49cd-ba1c-e3bdf01d0446\youtube_downloader_icon_1776963596370.png"
-ico_path = "icon.ico"
+ico_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "icon.ico")
 
 if os.path.exists(png_path):
     img = Image.open(png_path)

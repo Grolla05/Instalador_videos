@@ -83,7 +83,7 @@ Como o backend Flask escuta em uma porta local, um atacante mal-intencionado nav
 Para blindar o aplicativo contra exploits e invasão de dados, implementamos um **mecanismo de isolamento nativo de API**:
 
 1. **Geração do Token Unilateral**:
-   * No boot do Python (`main.py`), é gerada uma chave randômica única criptográfica de alta entropia (UUIDv4) em tempo de execução e armazenada exclusivamente na RAM (`API_TOKEN`).
+   * No boot do Python (`core/main.py`), é gerada uma chave randômica única criptográfica de alta entropia (UUIDv4) em tempo de execução e armazenada exclusivamente na RAM (`API_TOKEN`).
 2. **Distribuição via Injeção de Script Nativos**:
    * O frontend não tem acesso físico ao token no carregamento da página. Quando a janela do `pywebview` está pronta (`window.addEventListener('pywebviewready')`), ela solicita de forma síncrona o token diretamente do barramento de API nativo do Python (`window.pywebview.api.get_api_token()`).
 3. **Validação de Cabeçalho `@app.before_request`**:
@@ -111,16 +111,16 @@ O YouTube transmite transmissões de alta resolução (1080p, 2K, 4K) em canais 
 
 ### ✨ Método Recomendado — Script Automático
 
-Rode o script `setup_ffmpeg.py` incluído no projeto. Ele baixa o pacote oficial da **gyan.dev**, extrai os três executáveis e os coloca automaticamente em `bin/`:
+Rode o script `scripts/setup_ffmpeg.py` incluído no projeto. Ele baixa o pacote oficial da **gyan.dev**, extrai os três executáveis e os coloca automaticamente em `bin/`:
 
 ```bash
-python setup_ffmpeg.py
+python scripts/setup_ffmpeg.py
 ```
 
 Para forçar a reinstalação caso os binários já existam:
 
 ```bash
-python setup_ffmpeg.py --force
+python scripts/setup_ffmpeg.py --force
 ```
 
 ### Configuração Manual (alternativa)
@@ -154,7 +154,7 @@ pip install -r requirements.txt
 ### 3. Instalando o FFmpeg (obrigatório)
 
 ```bash
-python setup_ffmpeg.py
+python scripts/setup_ffmpeg.py
 ```
 
 > O script baixa automaticamente os binários do FFmpeg (~100 MB) e os coloca em `bin/`. Necessário apenas uma vez.
@@ -162,15 +162,17 @@ python setup_ffmpeg.py
 ### 4. Rodar em Ambiente de Desenvolvimento
 
 ```bash
-python main.py
+python core/main.py
 ```
+
+> Alternativa: `python app.py` sobe só o servidor Flask (modo dev, sem a janela nativa pywebview), útil pra testar a API isolada.
 
 ### 5. Rodar Testes de Integração Automatizados
 
 Uma suíte completa de 10 blocos de testes unitários e de integração está disponível para garantir a conformidade da segurança, concorrência e endpoints da API:
 
 ```bash
-python test_app.py
+python tests/test_app.py
 ```
 
 ---
@@ -194,10 +196,10 @@ O executável compilado de clique único e sem console será exportado para:
 
 ### ⚡ Criando um Atalho na Área de Trabalho (Shortcut)
 
-Para facilitar o acesso ao seu executável compilado diretamente da Área de Trabalho do Windows com o ícone personalizado, criamos um script utilitário automatizado (`create_shortcut.py`) que faz essa configuração de forma nativa e robusta:
+Para facilitar o acesso ao seu executável compilado diretamente da Área de Trabalho do Windows com o ícone personalizado, criamos um script utilitário automatizado (`scripts/create_shortcut.py`) que faz essa configuração de forma nativa e robusta:
 
 ```bash
-python create_shortcut.py
+python scripts/create_shortcut.py
 ```
 
 * **Recuperação de Caminho pelo Registro:** O script consulta o registro do Windows (`winreg`) para localizar a pasta Desktop real do usuário, funcionando perfeitamente mesmo se ela estiver mapeada em caminhos do OneDrive ou traduzida pelo idioma do sistema operacional.
@@ -207,13 +209,17 @@ python create_shortcut.py
 ## 📁 Estrutura de Arquivos do Projeto
 
 ```
-├── main.py                # Inicializador Desktop, rotinas de eventos e pywebview
 ├── app.py                 # Core do Flask, DB SQLite, Threads e cancelamentos ativos
-├── updater.py             # Monitor de versão e auto-atualizador do yt-dlp via PyPI
-├── test_app.py            # Suíte abrangente de testes unitários e de integração
 ├── build.py               # Orquestrador do empacotamento PyInstaller
-├── create_shortcut.py     # Utilitário para criar o atalho (.lnk) na Área de Trabalho
-├── setup_ffmpeg.py        # ✨ Setup automático dos binários FFmpeg (rodar após clonar)
+├── core/
+│   ├── main.py             # Inicializador Desktop, rotinas de eventos e pywebview
+│   └── updater.py          # Monitor de versão e auto-atualizador do yt-dlp via PyPI
+├── scripts/
+│   ├── setup_ffmpeg.py     # ✨ Setup automático dos binários FFmpeg (rodar após clonar)
+│   ├── create_shortcut.py  # Utilitário para criar o atalho (.lnk) na Área de Trabalho
+│   └── convert_icon.py     # Utilitário de geração do icon.ico a partir de um PNG
+├── tests/
+│   └── test_app.py         # Suíte abrangente de testes unitários e de integração
 ├── static/
 │   ├── favicon.png        # [Opcional] Ícone padrão carregado dinamicamente no app
 │   └── css/
@@ -222,9 +228,9 @@ python create_shortcut.py
 │   └── index.html         # Template do frontend e micro-interações Anime.js
 ├── bin/
 │   ├── .gitkeep           # Reserva a pasta bin no repositório Git
-│   ├── ffmpeg.exe         # ⚠️ NÃO incluso no repo — instalar via setup_ffmpeg.py
-│   ├── ffprobe.exe        # ⚠️ NÃO incluso no repo — instalar via setup_ffmpeg.py
-│   └── ffplay.exe         # ⚠️ NÃO incluso no repo — instalar via setup_ffmpeg.py
+│   ├── ffmpeg.exe         # ⚠️ NÃO incluso no repo — instalar via scripts/setup_ffmpeg.py
+│   ├── ffprobe.exe        # ⚠️ NÃO incluso no repo — instalar via scripts/setup_ffmpeg.py
+│   └── ffplay.exe         # ⚠️ NÃO incluso no repo — instalar via scripts/setup_ffmpeg.py
 ├── icon.ico               # Ícone do executável Windows
 ├── requirements.txt       # Arquivo de bibliotecas dependentes
 └── .gitignore             # Configuração de arquivos ignorados no controle Git

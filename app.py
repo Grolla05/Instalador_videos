@@ -12,7 +12,7 @@ from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
 
 # Dynamically inject %APPDATA%/Vídeo Downloader 1.1v/lib into sys.path before importing yt_dlp
-import updater
+from core import updater
 updater.setup_dynamic_path()
 
 import yt_dlp
@@ -400,6 +400,13 @@ def build_ydl_opts(fmt_config: dict, output_template: str, progress_hook,
         "fragment_retries": 15,
         "retry_sleep": "exponential",
         "extractor_retries": 5,
+        # yt-dlp >=2026.x só resolve o desafio "n" do YouTube com runtime JS;
+        # sem isso só formatos de storyboard (mhtml) ficam disponíveis.
+        # "deno" é o único habilitado por padrão e raramente está instalado,
+        # então adicionamos "node" (mais comum) como alternativa, e liberamos
+        # o download do script solver (ejs) do GitHub quando necessário.
+        "js_runtimes": {"deno": {}, "node": {}},
+        "remote_components": ["ejs:github"],
     }
 
     # 1. Configurar FFmpeg portátil se disponível
@@ -423,13 +430,13 @@ def build_ydl_opts(fmt_config: dict, output_template: str, progress_hook,
             if resolution == "hdplus":
                 # Resolução HD+ (1540x720) - Prioriza largura até 1540 e altura 720
                 if ext == "mp4":
-                    opts["format"] = "bestvideo[height<=720][width<=1540][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][width<=1540][ext=mp4]/best"
+                    opts["format"] = "bestvideo[height<=720][width<=1540]+bestaudio/best[height<=720][width<=1540]/best"
                 else:
                     opts["format"] = "bestvideo[height<=720][width<=1540][ext=webm]+bestaudio[ext=webm]/best[height<=720][width<=1540][ext=webm]/best"
             else:
                 height = resolution
                 if ext == "mp4":
-                    opts["format"] = f"bestvideo[height<={height}][ext=mp4]+bestaudio[ext=m4a]/best[height<={height}][ext=mp4]/best"
+                    opts["format"] = f"bestvideo[height<={height}]+bestaudio/best[height<={height}]/best"
                 else:
                     opts["format"] = f"bestvideo[height<={height}][ext=webm]+bestaudio[ext=webm]/best[height<={height}][ext=webm]/best"
             print(f"DEBUG: Formato dinâmico de alta resolução configurado: {opts['format']}")
@@ -494,7 +501,7 @@ def _friendly_error(raw: str, has_ffmpeg: bool = True) -> str:
         if not has_ffmpeg:
             return (
                 "Qualidade solicitada indisponível sem FFmpeg. Instale o FFmpeg "
-                "(rode 'python setup_ffmpeg.py' na pasta do programa) ou baixe "
+                "(rode 'python scripts/setup_ffmpeg.py' na pasta do programa) ou baixe "
                 "em outra qualidade/formato."
             )
         return "Formato não disponível para este vídeo. Tente outra qualidade ou formato."

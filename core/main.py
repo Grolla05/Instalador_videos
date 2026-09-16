@@ -16,6 +16,9 @@ import logging
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
 
+# ── Make the repo root importable (this file lives in core/, app.py in root) ──
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 # ── PyInstaller resource path helper ──────────────────────────────────────────
 def resource_path(relative: str) -> str:
     """Return the absolute path to a bundled resource (works in dev & .exe)."""
