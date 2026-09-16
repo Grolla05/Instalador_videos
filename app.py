@@ -433,9 +433,17 @@ def build_ydl_opts(fmt_config: dict, output_template: str, progress_hook,
                 else:
                     opts["format"] = f"bestvideo[height<={height}][ext=webm]+bestaudio[ext=webm]/best[height<={height}][ext=webm]/best"
             print(f"DEBUG: Formato dinâmico de alta resolução configurado: {opts['format']}")
+        elif not has_ffmpeg:
+            # Sem FFmpeg não dá pra mesclar vídeo+áudio separados — precisa de
+            # formato já muxed. "best" sozinho costuma não ter candidato no
+            # YouTube atual (só oferece video-only+audio-only via DASH pra
+            # maioria dos vídeos em qualidade alta), daí cadeia de fallback
+            # decrescente em vez de um "best" solto.
+            if resolution and resolution != "720":
+                print(f"WARNING: Download em alta resolução ({resolution}) solicitado mas FFmpeg não está disponível! Aplicando fallback progressivo sem FFmpeg.")
+            opts["format"] = "best[height<=720]/best[height<=480]/best[height<=360]/best/worst"
+            print(f"DEBUG: Formato sem FFmpeg configurado (fallback progressivo): {opts['format']}")
         else:
-            if resolution and resolution != "720" and not has_ffmpeg:
-                print(f"WARNING: Download em alta resolução ({resolution}) solicitado mas FFmpeg não está disponível! Aplicando fallback para 720p.")
             opts["format"] = fmt_config["format"]
     else:
         opts["format"] = fmt_config["format"]
@@ -465,7 +473,7 @@ def _needs_auth(error_msg: str) -> bool:
     return any(kw in error_msg.lower() for kw in keywords)
 
 
-def _friendly_error(raw: str) -> str:
+def _friendly_error(raw: str, has_ffmpeg: bool = True) -> str:
     """Convert a raw yt-dlp error into user-friendly Portuguese."""
     lower = raw.lower()
     if "sign in" in lower or "login" in lower:
@@ -482,6 +490,14 @@ def _friendly_error(raw: str) -> str:
         return "Este vídeo é privado e não pode ser baixado."
     if "members" in lower:
         return "Este vídeo é exclusivo para membros do canal."
+    if "requested format is not available" in lower:
+        if not has_ffmpeg:
+            return (
+                "Qualidade solicitada indisponível sem FFmpeg. Instale o FFmpeg "
+                "(rode 'python setup_ffmpeg.py' na pasta do programa) ou baixe "
+                "em outra qualidade/formato."
+            )
+        return "Formato não disponível para este vídeo. Tente outra qualidade ou formato."
     if "unavailable" in lower or "not available" in lower:
         return "Vídeo indisponível ou já foi removido do YouTube."
     if "ffmpeg" in lower:
@@ -504,6 +520,11 @@ def _friendly_error(raw: str) -> str:
 def do_download(task_id: str, url: str, fmt: str, cookiefile: str | None = None,
                 resolution: str | None = None, audio_bitrate: str | None = None):
     tmp_cookie_copies: list[str] = []  # temp files to clean up at the end
+    # Mesmo check usado em build_ydl_opts — calculado antes do try pra estar
+    # disponível no except externo mesmo se um erro ocorrer cedo (ex.: fmt
+    # inválido em FORMATS[fmt]).
+    ffmpeg_dir = _get_ffmpeg_path()
+    has_ffmpeg = (ffmpeg_dir is not None) or (shutil.which("ffmpeg") is not None)
     try:
         with downloads_lock:
             active_downloads[task_id]["status"] = "downloading"
@@ -565,7 +586,7 @@ def do_download(task_id: str, url: str, fmt: str, cookiefile: str | None = None,
                 if not _needs_auth(last_error):
                     with downloads_lock:
                         active_downloads[task_id]["status"] = "error"
-                        active_downloads[task_id]["error"] = _friendly_error(last_error)
+                        active_downloads[task_id]["error"] = _friendly_error(last_error, has_ffmpeg)
                         save_task_to_db(task_id, active_downloads[task_id])
                     _cleanup_partial_files(task_id)
                     return
@@ -591,7 +612,7 @@ def do_download(task_id: str, url: str, fmt: str, cookiefile: str | None = None,
                 if not _needs_auth(last_error):
                     with downloads_lock:
                         active_downloads[task_id]["status"] = "error"
-                        active_downloads[task_id]["error"] = _friendly_error(last_error)
+                        active_downloads[task_id]["error"] = _friendly_error(last_error, has_ffmpeg)
                         save_task_to_db(task_id, active_downloads[task_id])
                     _cleanup_partial_files(task_id)
                     return
@@ -640,7 +661,7 @@ def do_download(task_id: str, url: str, fmt: str, cookiefile: str | None = None,
                 if last_error:
                     with downloads_lock:
                         active_downloads[task_id]["status"] = "error"
-                        active_downloads[task_id]["error"] = _friendly_error(auth_error)
+                        active_downloads[task_id]["error"] = _friendly_error(auth_error, has_ffmpeg)
                         save_task_to_db(task_id, active_downloads[task_id])
                     _cleanup_partial_files(task_id)
                     return
@@ -682,7 +703,7 @@ def do_download(task_id: str, url: str, fmt: str, cookiefile: str | None = None,
         else:
             with downloads_lock:
                 active_downloads[task_id]["status"] = "error"
-                active_downloads[task_id]["error"] = _friendly_error(str(exc))
+                active_downloads[task_id]["error"] = _friendly_error(str(exc), has_ffmpeg)
                 save_task_to_db(task_id, active_downloads[task_id])
             _cleanup_partial_files(task_id)
     finally:
