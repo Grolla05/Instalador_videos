@@ -18,17 +18,20 @@ updater.setup_dynamic_path()
 import yt_dlp
 
 
+_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 def _resource_path(relative: str) -> str:
     """Return absolute path to a resource — works in dev and inside a PyInstaller .exe."""
-    base = getattr(sys, "_MEIPASS", os.path.abspath("."))
+    base = getattr(sys, "_MEIPASS", _ROOT_DIR)
     return os.path.join(base, relative)
 
 
 def _app_dir() -> Path:
-    """Return a writable directory next to the executable (or CWD in dev)."""
+    """Return a writable directory next to the executable (or the repo root in dev)."""
     if getattr(sys, "frozen", False):          # running as PyInstaller .exe
         return Path(sys.executable).parent
-    return Path(os.path.abspath("."))
+    return Path(_ROOT_DIR)
 
 
 app = Flask(

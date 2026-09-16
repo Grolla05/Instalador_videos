@@ -12,6 +12,14 @@ import threading
 import socket
 import logging
 
+# ── PyInstaller --windowed builds have no console: sys.stdout/stderr are None,
+# so any print() (there are many, for DEBUG/UPDATER logging) crashes the thread
+# that calls it with AttributeError. Redirect to a null sink before anything runs.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
+
 # ── Silence Flask's startup banner when running as a packaged app ─────────────
 log = logging.getLogger("werkzeug")
 log.setLevel(logging.ERROR)
