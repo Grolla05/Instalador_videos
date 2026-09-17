@@ -427,34 +427,54 @@ def build_ydl_opts(fmt_config: dict, output_template: str, progress_hook,
     
     if ext in ("mp4", "webm"):
         opts["merge_output_format"] = ext
-        
-        # Se selecionado resolução em alta qualidade e temos o FFmpeg ativo
-        if resolution and resolution != "720" and has_ffmpeg:
-            if resolution == "hdplus":
-                # Resolução HD+ (1540x720) - Prioriza largura até 1540 e altura 720
-                if ext == "mp4":
-                    opts["format"] = "bestvideo[height<=720][width<=1540]+bestaudio/best[height<=720][width<=1540]/best"
-                else:
-                    opts["format"] = "bestvideo[height<=720][width<=1540][ext=webm]+bestaudio[ext=webm]/best[height<=720][width<=1540][ext=webm]/best"
-            else:
-                height = resolution
-                if ext == "mp4":
-                    opts["format"] = f"bestvideo[height<={height}]+bestaudio/best[height<={height}]/best"
-                else:
-                    opts["format"] = f"bestvideo[height<={height}][ext=webm]+bestaudio[ext=webm]/best[height<={height}][ext=webm]/best"
-            print(f"DEBUG: Formato dinâmico de alta resolução configurado: {opts['format']}")
-        elif not has_ffmpeg:
+        height = resolution if resolution else "720"
+
+        if not has_ffmpeg:
             # Sem FFmpeg não dá pra mesclar vídeo+áudio separados — precisa de
             # formato já muxed. "best" sozinho costuma não ter candidato no
             # YouTube atual (só oferece video-only+audio-only via DASH pra
             # maioria dos vídeos em qualidade alta), daí cadeia de fallback
             # decrescente em vez de um "best" solto.
-            if resolution and resolution != "720":
-                print(f"WARNING: Download em alta resolução ({resolution}) solicitado mas FFmpeg não está disponível! Aplicando fallback progressivo sem FFmpeg.")
-            opts["format"] = "best[height<=720]/best[height<=480]/best[height<=360]/best/worst"
+            if height != "720":
+                print(f"WARNING: Download em alta resolução ({height}) solicitado mas FFmpeg não está disponível! Aplicando fallback progressivo sem FFmpeg.")
+            if ext == "mp4":
+                # Sem FFmpeg só dá pra pegar stream já muxed — prioriza avc1/H.264
+                # (VW Play) antes de cair no fallback genérico por altura.
+                opts["format"] = (
+                    "best[vcodec^=avc1][ext=mp4][height<=720]/"
+                    "best[ext=mp4][height<=720]/"
+                    "best[height<=720]/best[height<=480]/best[height<=360]/best/worst"
+                )
+            else:
+                opts["format"] = "best[height<=720]/best[height<=480]/best[height<=360]/best/worst"
             print(f"DEBUG: Formato sem FFmpeg configurado (fallback progressivo): {opts['format']}")
+        elif height == "hdplus":
+            # Resolução HD+ (1540x720) - Prioriza largura até 1540 e altura 720
+            if ext == "mp4":
+                opts["format"] = (
+                    "bestvideo[vcodec^=avc1][height<=720][width<=1540]+bestaudio[acodec^=mp4a]/"
+                    "bestvideo[vcodec^=hev1][height<=720][width<=1540]+bestaudio[acodec^=mp4a]/"
+                    "bestvideo[vcodec^=hvc1][height<=720][width<=1540]+bestaudio[acodec^=mp4a]/"
+                    "best[vcodec^=avc1][height<=720][width<=1540]/"
+                    "best[height<=720][width<=1540]/best"
+                )
+            else:
+                opts["format"] = "bestvideo[height<=720][width<=1540][ext=webm]+bestaudio[ext=webm]/best[height<=720][width<=1540][ext=webm]/best"
+            print(f"DEBUG: Formato dinâmico de alta resolução configurado: {opts['format']}")
+        elif ext == "mp4":
+            # VW Play (central multimídia) só lê MP4 com vídeo H.264/H.265 (avc1/hev1/hvc1)
+            # e áudio AAC (mp4a) — prioriza esses codecs nativos antes de cair pra "best" genérico.
+            opts["format"] = (
+                f"bestvideo[vcodec^=avc1][height<={height}]+bestaudio[acodec^=mp4a]/"
+                f"bestvideo[vcodec^=hev1][height<={height}]+bestaudio[acodec^=mp4a]/"
+                f"bestvideo[vcodec^=hvc1][height<={height}]+bestaudio[acodec^=mp4a]/"
+                f"best[vcodec^=avc1][height<={height}]/"
+                f"best[height<={height}]/best"
+            )
+            print(f"DEBUG: Formato dinâmico de alta resolução configurado: {opts['format']}")
         else:
-            opts["format"] = fmt_config["format"]
+            opts["format"] = f"bestvideo[height<={height}][ext=webm]+bestaudio[ext=webm]/best[height<={height}][ext=webm]/best"
+            print(f"DEBUG: Formato dinâmico de alta resolução configurado: {opts['format']}")
     else:
         opts["format"] = fmt_config["format"]
 
@@ -685,6 +705,20 @@ def do_download(task_id: str, url: str, fmt: str, cookiefile: str | None = None,
                 break
 
         if downloaded_file and downloaded_file.exists():
+            # Renomeia do UUID interno pro título do vídeo, pra bater com o
+            # nome mostrado na interface (evita nome aleatório na pasta).
+            final_name = f"{title[:150]}{downloaded_file.suffix}"
+            final_path = DOWNLOAD_DIR / final_name
+            counter = 1
+            while final_path.exists():
+                final_name = f"{title[:150]} ({counter}){downloaded_file.suffix}"
+                final_path = DOWNLOAD_DIR / final_name
+                counter += 1
+            try:
+                downloaded_file = downloaded_file.rename(final_path)
+            except Exception as e:
+                print(f"DEBUG: Falha ao renomear arquivo final pro título: {e}")
+
             with downloads_lock:
                 active_downloads[task_id]["status"] = "done"
                 active_downloads[task_id]["filename"] = downloaded_file.name

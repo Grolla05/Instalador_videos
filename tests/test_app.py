@@ -133,16 +133,23 @@ def run_tests():
     
     fmt_config = FORMATS["mp4"]
     opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="1080")
-    assert "bestvideo[height<=1080]+bestaudio" in opts["format"]
+    assert "bestvideo[vcodec^=avc1][height<=1080]+bestaudio[acodec^=mp4a]" in opts["format"]
 
     print("Testing build_ydl_opts - Dynamic Resolution 480p")
     opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="480")
-    assert "bestvideo[height<=480]+bestaudio" in opts["format"]
+    assert "bestvideo[vcodec^=avc1][height<=480]+bestaudio[acodec^=mp4a]" in opts["format"]
     print("OK")
 
     print("Testing build_ydl_opts - HD+ (1540x720)")
     opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="hdplus")
-    assert "bestvideo[height<=720][width<=1540]+bestaudio" in opts["format"]
+    assert "bestvideo[vcodec^=avc1][height<=720][width<=1540]+bestaudio[acodec^=mp4a]" in opts["format"]
+    print("OK")
+
+    print("Testing build_ydl_opts - Default 720p (VW Play: H.264/H.265 + AAC)")
+    opts = build_ydl_opts(fmt_config, "test_template", lambda d: None, resolution="720")
+    assert "bestvideo[vcodec^=avc1][height<=720]+bestaudio[acodec^=mp4a]" in opts["format"]
+    assert "vcodec^=hev1" in opts["format"]
+    assert "vcodec^=hvc1" in opts["format"]
     print("OK")
     
     shutil.which = original_which
